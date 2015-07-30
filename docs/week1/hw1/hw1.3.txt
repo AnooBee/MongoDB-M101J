@@ -1,0 +1,6 @@
+
+mvn compile exec:java -Dexec.mainClass=com.mongodb.SparkHomework
+
+http://localhost:4567
+
+The answer is: 523258

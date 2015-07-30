@@ -1,0 +1,77 @@
+CRDU operations exist as methods in programming language API; No SQL
+
+x = { "a" : 1 };
+y = "a";
+x[y]++; // x[y] == a == 1; 1+1 = 2
+print(x.a); //x.a = 2
+
+db.<table>.<function>
+db.people.insert(doc)
+
+Quiz:
+doc = {"name":"apple", "color": "red", "shape":"round"}
+db.fruit.insert(doc);
+
+_id -> PK - immutable - cannot be changed; can simulate by adding a new field and removing old
+_id has to be unique within collection
+ObjectID - is this unique; generated based on time and server info and is globally unique; if _id is not sent, mongo will create this id 
+
+
+
+db.people.find() - all docs in collection
+db.people.findOne() - gets one doc at random
+db.people.findOne({"name":"Jones"}) - equivalent of WHERE in SQL- multiple by separating doc with , - eg: {"name":"Jones", "sex":"M"}
+db.people.findOne({"name":"Jones"}, {"name":true,"_id":false}) - displays name and not _id - equivalent to column list in SQL
+
+Quiz: 
+db.users.findOne({"username":"dwight"}, {"email":true, "_id":false})
+
+Query operators:
+$gt, $lt, $lte, $gte
+
+db.scores.find({score:{$gt:95}})  - > score > 95
+db.scores.find({score:{$gt:95, $lte :98}, type:"essay"}) - > score <95; <=98 and type = essay
+
+Quiz: 
+Which of these finds documents with a score between 50 and 60, inclusive? 
+db.scores.find({ score : { $gte : 50 , $lte : 60 } } );
+
+$or  is a prefix operator and takes an array or documents
+{$or:[{....}, {...}]}
+
+db.scores.find({$or:[{score:{$lt:50}}, {score:{$gt:90}}]})
+
+$and is similar to $or as a prefix operator
+$and is not really used because find (first check, second check) does the same
+
+db.scores.find( { score : { $gt : 50 }, score : { $lt : 60 } } ); returns less than 60, becauase javascript parser replaces first score with second
+User $and in this case.
+
+inside arrays: only looks at top level of specified field
+
+$in and $all operators
+$all: matches all the params passed in - basically a subset of the collection being searched
+$in: returns anything containing the params 
+
+If not using $ operator, find will need the query to be in exact order and is an exact match
+
+dot notation allows to reach inside nested docs 
+
+{ product : "Super Duper-o-phonic", 
+  price : 100000000000,
+  reviews : [ { user : "fred", comment : "Great!" , rating : 5 },
+              { user : "tom" , comment : "I agree with Fred, somewhat!" , rating : 4 } ],
+  ... }
+  
+db.catalog.find({"price":{$gt:10000}, "reviews.rating":{$gte:5}});  
+
+Cursors and Querying:
+
+
+Java:
+MongoDatabase and MongoCollection are immutable... 
+
+
+to remove all records in collection - db.collection.remove({})
+
+
