@@ -49,6 +49,9 @@ public class UserDAO {
         // be sure to add username and hashed password to the document. problem instructions
         // will tell you the schema that the documents must follow.
         
+        // { "_id" : "test", 
+        //	"password" : "77+977+9Zu+/vXzvv73vv73vv73vv70W77+977+977+9GDE=,66120104", 
+        //	"email" : "test@test.com" }
         Document user = new Document("_id", username).append("password", passwordHash);
 
         if (email != null && !email.equals("")) {
