@@ -14,3 +14,49 @@ MongoDB:
 3rd normal form: "[Every] non-key [attribute] must provide a fact about the key, the whole key, and nothing but the key
 
 If MongoDB Schema begins to look like a RDBMS schema - probably doing it wrong.
+
+No transactions in MDB works because unlike RDBMS there is no updating of multiple tables
+- Updates happen in single doc usually - try and restructure schema to make this happen.
+- can also do a manual lock in the software.
+- tolerate the update inconsistency if application allows for it.
+
+
+one to one relations:
+
+how to decide how to embed collections
+- Freq of access (if child is not needed always - may want to keep in separate collection)
+- size of items (> 16Mb is a constraint)
+- atomicity of data - if both collections needs to be updated, keep them embedded) 
+
+One to many relations:
+If true one to many eg: City to people - use two collections with linking 
+If one to few, embed items within the doc
+
+Many to Many:
+Eg: Books:Authors or students:teachers
+Usually, many- many will really be few-few, not true many-many
+
+Benefits of embedding
+-higher read performance and one round trip to DB
+
+Representing trees:
+use collections named parent and ancestors
+
+When to denormalize:
+1:1 - embed
+1:many - embed (from the many to one); if going to many from 1, use linking
+many:many - linking
+
+ODM -> Object Document Mapper  - similar to JPA/hibernate/toplink
+- hides low level details of driver; ODM gives a java API for app
+- uses reflection; so could be a performance issue; but not usually
+- Morphia
+
+Morphia:
+query.get() -> equivalent of findOne()
+query.asList() - findAll()
+or query.fetch() and iterate over result
+
+
+
+
