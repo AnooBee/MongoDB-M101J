@@ -1,0 +1,16 @@
+Schema Design:
+
+Application driven schema ...data is modelled based on application; (different from RDBMS which is agnostic of application).
+
+MongoDB:
+- Rich documents
+- Prejoin/embed data for fast access
+- No Joins (hard to scale - joins has to be done within your app - or embed in doc)
+- No constraints (No FK)
+- Atomic operation; No Transactions
+- No declared schema
+
+
+3rd normal form: "[Every] non-key [attribute] must provide a fact about the key, the whole key, and nothing but the key
+
+If MongoDB Schema begins to look like a RDBMS schema - probably doing it wrong.
