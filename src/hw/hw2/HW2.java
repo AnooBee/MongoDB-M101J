@@ -45,6 +45,14 @@ public class HW2 {
 		
 		MongoCursor hwColl =  collection.find(filter).sort(sort).iterator();
 		
+		/* Schema:		
+		{
+	        "_id" : ObjectId("50906d7fa3c412bb040eb577"),
+	        "student_id" : 0,
+	        "type" : "exam",
+	        "score" : 54.6535436362647
+		}*/
+		
 		try {
 			
 			System.out.println("Collection count - filtered for homework: "+hwColl); //400
