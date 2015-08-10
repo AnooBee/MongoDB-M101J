@@ -89,7 +89,7 @@ public class HW3 {
 					String scoreType = (String) scoreObject.get("type");
 
 					//compare homework scores to find the lowest score
-					if (scoreType.equalsIgnoreCase("homework")) {
+					if ("homework".equalsIgnoreCase(scoreType)) {
 						double score = (Double) scoreObject.get("score");
 						if (lowestScore == 0.0 || (score < lowestScore)) {
 							lowestScore = score;
