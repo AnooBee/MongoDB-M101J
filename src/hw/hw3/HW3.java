@@ -1,15 +1,12 @@
 package hw.hw3;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import org.bson.Document;
 
-import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
-import com.mongodb.client.FindIterable;
+import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 
@@ -63,47 +60,67 @@ public class HW3 {
 		}*/
 		
 		MongoDatabase db = client.getDatabase("school");
+	
+		//get student cursor for easier navigation through the documents
+		MongoCursor<Document> studentsCursor = db.getCollection("students").find().iterator();
 		
-	/*	MongoCollection<Document> collection = db.getCollection("students");
+		//Student collection for update operation
+		MongoCollection<Document> studentsCollection = db.getCollection("students");
+
+		double id; //student id
 		
-		System.out.println("Collection count - start: "+ collection.count()); //200
-		
-		Bson scoresFilter = new Document("", "scores"); //find All and return only the scores field
-*/		
-		MongoCursor<Document> scoresColl = db.getCollection("students").find().iterator();
-		
-		double id;
 		try {
 						
 			Document studentScore;
 			
-			while (scoresColl.hasNext()) {
-				
-				ArrayList hwArray;
-				
-				studentScore = scoresColl.next();
+			while (studentsCursor.hasNext()) {
+								
+				studentScore = studentsCursor.next();
 				id = studentScore.getDouble("_id");
 				System.out.println("id..."+ id);
-				BasicDBList scoreList =   (BasicDBList) studentScore.get("scores");
 				
-				for (int i = 0; i < scoreList.size(); i++) {
-					
-					DBObject score = (DBObject) scoreList.get(i);
-					if (score.get("type").toString().equalsIgnoreCase("homework")) {
-						System.out.println(score);
+				//Get array of scores 
+				List<Document> scoreList = (List<Document>) studentScore.get("scores");
+				double lowestScore = 0.0;
+				
+				//Find lowest homework score in the scores array for each student
+				for (Document scoreObject : scoreList) {
+
+					String scoreType = (String) scoreObject.get("type");
+
+					//compare homework scores to find the lowest score
+					if (scoreType.equalsIgnoreCase("homework")) {
+						double score = (Double) scoreObject.get("score");
+						if (lowestScore == 0.0 || (score < lowestScore)) {
+							lowestScore = score;
+						}
+						//System.out.println("lowest homework score: "+lowestScore);
 					}
+
 				}
+				// remove the lowest score from scorelist 
+				Document lowScoreToRemove = new Document("type", "homework").append("score", lowestScore);
+				System.out.println("Removing: " + lowScoreToRemove);
+				scoreList.remove(lowScoreToRemove);
 				
+				//Update the students collection with the new array of scores
+				BasicDBObject newDocument = new BasicDBObject();
+				newDocument.append("$set", new BasicDBObject().append("scores", scoreList));
 				
+				//search by student id
+				BasicDBObject searchQuery = new BasicDBObject().append( "_id", id);
+				
+				studentsCollection.updateOne(searchQuery, newDocument);
+								
 			}
-			
+
 			
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			
 		} finally {
-			scoresColl.close();
+			studentsCursor.close();
 		}
 	}
 
