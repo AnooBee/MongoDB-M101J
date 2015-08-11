@@ -1,0 +1,54 @@
+use blog
+db.posts.drop()
+# from the terminal window (Important to exit out of mongo shell and run from windows terminal :) )
+mongoimport -d blog -c posts < posts.json
+
+
+Your assignment is to make the following blog pages fast:
+
+The blog home page
+The page that displays blog posts by tag (http://localhost:8082/tag/whatever)
+The page that displays a blog entry by permalink (http://localhost:8082/post/permalink)
+
+
+The blog home page gets 10 blogs by desc date
+BlogController.initializeRoutes calls BlogPostDAO.findByDateDescending()
+Query : 
+Bson sort = Sorts.descending("date");
+postsCollection.find().sort(sort).limit(limit);
+
+Index:
+Need to create index on date, in descending
+
+> db.posts.createIndex({date:-1})
+
+
+The page that displays blog posts by tag (http://localhost:8082/tag/whatever)
+
+blogPostDAO.findByTagDateDescending
+
+Query:
+BasicDBObject query = new BasicDBObject("tags", tag);
+        System.out.println("/tag query: " + query.toString());
+        DBCursor cursor = postsCollection.find(query).sort(new BasicDBObject().append("date", -1)).limit(10);
+
+Index:
+Need to create an index on tags and date descending
+
+> db.posts.createIndex({tags:1, date:-1});
+
+
+The page that displays a blog entry by permalink (http://localhost:8082/post/permalink)
+
+BlogPostDAO.findByPermalink()
+
+DBObject post = postsCollection.findOne(new BasicDBObject("permalink", permalink));
+
+Permalink is unique in the posts collection
+
+Index:
+> db.posts.createIndex({"permalink":1}, {unique:true})
+
+Create all three indexes before running mongoProc otherwise you'll get an error.
+
+        

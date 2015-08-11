@@ -1,0 +1,8 @@
+
+The query uses an index to determine the order in which to return result documents. - True ("stage" : "IXSCAN";  "indexName" : "created_at_-1", "direction" : "backward")
+The query examines 251120 documents. - True ("totalDocsExamined" : 251120)
+The query is a covered query. - False ( covered query implies not having to examine any doc; query can be retrieved from index - not true in this case)
+The query uses an index to determine which documents match. - False ( IXSCAN to sort but not for search (?))
+The query returns 251120 documents. - False (nReturned:10)
+
+Ans: 1, 2

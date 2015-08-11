@@ -1,0 +1,48 @@
+WiredTiger storage engine - faster than MMAPv1
+Provides document-level concurrency and compression
+
+WiredTiger cannott read MMAPv1 files; so start in its own db directory
+mongod --dbpath WT --storageEngine wiredTiger
+
+
+Indexes:
+- Ordered set of things
+ Eg: Index of (a,b,c)
+ - a - yes
+   a,b - yes
+   a,b,c - yes
+   c - no
+   c,b - no
+   
+ Writes are slower on writes if indexed columns; but reads are much faster
+ 
+ If doing a large insert of documents, do the insert with NO indexes on collection; then add the indexes
+ 
+ Creating Indexes:
+ db.students.createIndex({class:1, student_name:1})
+ 
+ Find Indexes: db.students.getIndexes()
+ - Always will have index on _id - cannot be deleted
+ 
+ Drop indexes: db.students.dropIndex({key}); -- db.students.dropIndex({student_id:1})
+ 
+ Multikey indexes:
+ - cannot have multikey indexes on more than one array
+ Eg: db.foo.createIndex( { a:1, b:1 } )
+
+db.foo.insert( { a : "grapes", b : "oranges" } )  - Yes
+db.foo.insert( { a : ["apples", "oranges" ], b : "grapes" } ) - yes
+db.foo.insert( { a : [ 1, 2, 3 ], b : [ 5, 6, 7 ] } ) - NO
+db.foo.insert( { a : "grapes", b : [ 8, 9, 10 ] } ) - Yes
+
+Dot notation:
+db.students.createIndex({'scores.score':1});  - > creates index on element inside an array.
+
+Create unique index:
+db.stuff.createIndex({thing:1}, {unique:true})
+- wont create index if there are two values with same key
+
+Please provide the mongo shell command to create a unique index on student_id, class_id, ascending for the collection students.
+Eg: db.students.createIndex({student_id:1, class_id:1}, {unique:true})
+
+Sparse index uses less space and you have greater flexibility with creating unique indexes

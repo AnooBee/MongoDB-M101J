@@ -1,0 +1,59 @@
+Read profiling section
+
+From commandline: 
+mongoimport -d m101 -c profile < sysprofile.json
+
+Now query the profile data, looking for all queries to the students collection in the database school2, 
+sorted in order of decreasing latency. 
+What is the latency of the longest running operation to the collection, in milliseconds?
+
+>mongo
+>use m101
+>db.profile.find().pretty() to find out schema of doc; below is doc for school2.students (ns:school2.students) and latency = millis
+
+{
+        "_id" : ObjectId("55ca39a03712c6d74ee6138f"),
+        "ts" : ISODate("2012-11-20T20:02:43.973Z"),
+        "op" : "query",
+        "ns" : "school2.students",
+        "query" : {
+                "student_id" : 1
+        },
+        "ntoreturn" : 0,
+        "ntoskip" : 0,
+        "nscanned" : 10000000,
+        "keyUpdates" : 0,
+        "numYield" : 1,
+        "lockStats" : {
+                "timeLockedMicros" : {
+                        "r" : 7653438,
+                        "w" : 0
+                },
+                "timeAcquiringMicros" : {
+                        "r" : 1014386,
+                        "w" : 234618
+                }
+        },
+        "nreturned" : 10,
+        "responseLength" : 2350,
+        "millis" : 6639,
+        "client" : "127.0.0.1",
+        "user" : ""
+}
+
+> db.profile.find({"ns":"school2.students"})
+
+Sort in desc order of millis
+>db.profile.find({"ns":"school2.students"}).sort({millis:-1})
+
+Get highest
+db.profile.find({"ns":"school2.students"}).sort({millis:-1}).limit(1)
+
+{ "_id" : ObjectId("55ca39a03712c6d74ee61707"), "ts" : ISODate("2012-11-20T20:09
+:49.862Z"), "op" : "query", "ns" : "school2.students", "query" : { "student_id"
+: 80 }, "ntoreturn" : 0, "ntoskip" : 0, "nscanned" : 10000000, "keyUpdates" : 0,
+ "numYield" : 5, "lockStats" : { "timeLockedMicros" : { "r" : 19776550, "w" : 0
+}, "timeAcquiringMicros" : { "w" : 5, "r" : 4134067 } }, "nreturned" : 10, "resp
+onseLength" : 2350, "millis" : 15820, "client" : "127.0.0.1", "user" : "" }
+
+Ans: 15820
