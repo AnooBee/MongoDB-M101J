@@ -1,45 +1,44 @@
 /*
- * Copyright (c) 2008 - 2013 10gen, Inc. <http://10gen.com>
+ * Copyright 2015 MongoDB, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
- *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
  */
 
 package course;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DB;
-import com.mongodb.DBCollection;
-import com.mongodb.DBObject;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import org.bson.Document;
 import sun.misc.BASE64Encoder;
 
 import java.security.SecureRandom;
 
-public class SessionDAO {
-    private final DBCollection sessionsCollection;
+import static com.mongodb.client.model.Filters.eq;
 
-    public SessionDAO(final DB blogDatabase) {
+public class SessionDAO {
+    private final MongoCollection<Document> sessionsCollection;
+
+    public SessionDAO(final MongoDatabase blogDatabase) {
         sessionsCollection = blogDatabase.getCollection("sessions");
     }
 
 
     public String findUserNameBySessionId(String sessionId) {
-        DBObject session = getSession(sessionId);
+        Document session = getSession(sessionId);
 
         if (session == null) {
             return null;
-        }
-        else {
+        } else {
             return session.get("username").toString();
         }
     }
@@ -58,22 +57,21 @@ public class SessionDAO {
         String sessionID = encoder.encode(randomBytes);
 
         // build the BSON object
-        BasicDBObject session = new BasicDBObject("username", username);
+        Document session = new Document("username", username)
+                           .append("_id", sessionID);
 
-        session.append("_id", sessionID);
-
-        sessionsCollection.insert(session);
+        sessionsCollection.insertOne(session);
 
         return session.getString("_id");
     }
 
     // ends the session by deleting it from the sesisons table
     public void endSession(String sessionID) {
-        sessionsCollection.remove(new BasicDBObject("_id", sessionID));
+        sessionsCollection.deleteOne(eq("_id", sessionID));
     }
 
     // retrieves the session from the sessions table
-    public DBObject getSession(String sessionID) {
-        return sessionsCollection.findOne(new BasicDBObject("_id", sessionID));
+    public Document getSession(String sessionID) {
+        return sessionsCollection.find(eq("_id", sessionID)).first();
     }
 }
