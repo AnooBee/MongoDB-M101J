@@ -1,0 +1,11 @@
+mongoimport -d test -c zips --drop zips.json
+> db.zips.count()
+29467
+
+Using the aggregation framework, calculate the sum total of people who are living in a zip code where the city starts with a digit.
+
+db.zips.aggregate([{$match: {city: /^\d.*$/}},
+			{$group:{_id:"", sum:{$sum:"$pop"}}}]);
+
+{ "_id" : "", "sum" : 298015 }
+>

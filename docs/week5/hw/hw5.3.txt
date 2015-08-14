@@ -1,0 +1,14 @@
+
+mongoimport -d test -c grades --drop grades.json
+
+import 280 docs
+
+
+What is the class_id which has the highest average student performance? 
+
+db.grades.aggregate([ {$unwind:"$scores"},
+		{$match:{"scores.type":{$ne:"quiz"}}},
+			{$group:{_id:"$class_id",avg:{$avg:"$scores.score"}}},
+				{$sort:{avg:-1}}, {$limit:1}]);
+				
+id:1 ; avg: 64.89
