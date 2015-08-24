@@ -1,0 +1,13 @@
+
+Run finals.InsertTest
+Throws an error when attempting to insertOne more than once - DupKey Exception; so only the first record gets inserted.
+
+Verify:
+>mongo
+> use test
+switched to db test
+> db.animals.find()
+{ "_id" : ObjectId("55db70187cd19b2e989d2484"), "animal" : "monkey" }
+>
+
+Ans: 1
