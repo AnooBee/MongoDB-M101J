@@ -1,5 +1,5 @@
 /*
- * Copyright 2013-2015 MongoDB Inc.
+ * Copyright (c) 2008 - 2013 10gen, Inc. <http://10gen.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,35 +17,36 @@
 
 package course;
 
+import com.mongodb.BasicDBObject;
+import com.mongodb.DB;
+import com.mongodb.DBCollection;
+import com.mongodb.DBObject;
 import com.mongodb.ErrorCategory;
+import com.mongodb.MongoException;
 import com.mongodb.MongoWriteException;
-import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.MongoCollection;
-import sun.misc.BASE64Encoder;
 
-import org.bson.Document;
+import sun.misc.BASE64Encoder;
 
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.Random;
 
-import static com.mongodb.client.model.Filters.eq;
-
 public class UserDAO {
-    private final MongoCollection<Document> usersCollection;
-    private final ThreadLocal<Random> random = new ThreadLocal<Random>();
+    private final DBCollection usersCollection;
+    private Random random = new SecureRandom();
 
-    public UserDAO(final MongoDatabase blogDatabase) {
+    public UserDAO(final DB blogDatabase) {
         usersCollection = blogDatabase.getCollection("users");
     }
 
     // validates that username is unique and insert into db
     public boolean addUser(String username, String password, String email) {
 
-        String passwordHash = makePasswordHash(password, Integer.toString(getRandom().nextInt()));
+        String passwordHash = makePasswordHash(password, Integer.toString(random.nextInt()));
 
-        Document user = new Document();
+        BasicDBObject user = new BasicDBObject();
 
         user.append("_id", username).append("password", passwordHash);
 
@@ -55,9 +56,9 @@ public class UserDAO {
         }
 
         try {
-            usersCollection.insertOne(user);
+            usersCollection.insert(user);
             return true;
-        } catch (MongoWriteException e) {
+        }catch (MongoWriteException e) {
             if (e.getError().getCategory().equals(ErrorCategory.DUPLICATE_KEY)) {
                 System.out.println("Username already in use: " + username);
                 return false;
@@ -66,12 +67,13 @@ public class UserDAO {
         }
     }
 
-    public Document validateLogin(String username, String password) {
-        Document user;
+    public DBObject validateLogin(String username, String password) {
+        DBObject user;
 
-        user = usersCollection.find(eq("_id", username)).first();
+        user = usersCollection.findOne(new BasicDBObject("_id", username));
 
         if (user == null) {
+            System.out.println("User not in database");
             return null;
         }
 
@@ -101,14 +103,5 @@ public class UserDAO {
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException("UTF-8 unavailable?  Not a chance", e);
         }
-    }
-
-    private Random getRandom() {
-        Random result = random.get();
-        if (result == null) {
-            result = new Random();
-            random.set(result);
-        }
-        return result;
     }
 }

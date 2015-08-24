@@ -1,32 +1,15 @@
-/*
- * Copyright 2013-2015 MongoDB Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- */
-
 package course;
 
 
+import com.mongodb.DB;
+import com.mongodb.DBObject;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
-import com.mongodb.client.MongoDatabase;
 import freemarker.template.Configuration;
 import freemarker.template.SimpleHash;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import org.apache.commons.lang3.StringEscapeUtils;
-import org.bson.Document;
 import spark.Request;
 import spark.Response;
 import spark.Route;
@@ -66,7 +49,7 @@ public class BlogController {
 
     public BlogController(String mongoURIString) throws IOException {
         final MongoClient mongoClient = new MongoClient(new MongoClientURI(mongoURIString));
-        final MongoDatabase blogDatabase = mongoClient.getDatabase("blog");
+        final DB blogDatabase = mongoClient.getDB("blog");
 
         blogPostDAO = new BlogPostDAO(blogDatabase);
         userDAO = new UserDAO(blogDatabase);
@@ -114,7 +97,7 @@ public class BlogController {
             public void doHandle(Request request, Response response, Writer writer) throws IOException, TemplateException {
                 String username = sessionDAO.findUserNameBySessionId(getSessionCookie(request));
 
-                List<Document> posts = blogPostDAO.findByDateDescending(10);
+                List<DBObject> posts = blogPostDAO.findByDateDescending(10);
                 SimpleHash root = new SimpleHash();
 
                 root.put("myposts", posts);
@@ -134,7 +117,7 @@ public class BlogController {
 
                 System.out.println("/post: get " + permalink);
 
-                Document post = blogPostDAO.findByPermalink(permalink);
+                DBObject post = blogPostDAO.findByPermalink(permalink);
                 if (post == null) {
                     response.redirect("/post_not_found");
                 }
@@ -307,7 +290,7 @@ public class BlogController {
                 String body = StringEscapeUtils.escapeHtml4(request.queryParams("commentBody"));
                 String permalink = request.queryParams("permalink");
 
-                Document post = blogPostDAO.findByPermalink(permalink);
+                DBObject post = blogPostDAO.findByPermalink(permalink);
                 if (post == null) {
                     response.redirect("/post_not_found");
                 }
@@ -357,7 +340,7 @@ public class BlogController {
 
                 System.out.println("Login: User submitted: " + username + "  " + password);
 
-                Document user = userDAO.validateLogin(username, password);
+                DBObject user = userDAO.validateLogin(username, password);
 
                 if (user != null) {
 
@@ -396,7 +379,7 @@ public class BlogController {
                 SimpleHash root = new SimpleHash();
 
                 String tag = StringEscapeUtils.escapeHtml4(request.params(":thetag"));
-                List<Document> posts = blogPostDAO.findByTagDateDescending(tag);
+                List<DBObject> posts = blogPostDAO.findByTagDateDescending(tag);
 
                 root.put("myposts", posts);
                 if (username != null) {
@@ -407,34 +390,7 @@ public class BlogController {
             }
         });
 
-        // will allow a user to click Like on a post
-        post(new FreemarkerBasedRoute("/like", "entry_template.ftl") {
-            @Override
-            protected void doHandle(Request request, Response response, Writer writer) throws IOException, TemplateException {
 
-                String permalink = request.queryParams("permalink");
-                String commentOrdinalStr = request.queryParams("comment_ordinal");
-
-
-                // look up the post in question
-
-                int ordinal = Integer.parseInt(commentOrdinalStr);
-
-                // TODO: check return or have checkSession throw
-                String username = sessionDAO.findUserNameBySessionId(getSessionCookie(request));
-                Document post = blogPostDAO.findByPermalink(permalink);
-
-                //  if post not found, redirect to post not found error
-                if (post == null) {
-                    response.redirect("/post_not_found");
-                }
-                else {
-                    blogPostDAO.likePost(permalink, ordinal);
-
-                    response.redirect("/post/" + permalink);
-                }
-            }
-        });
 
         // tells the user that the URL is dead
         get(new FreemarkerBasedRoute("/post_not_found", "post_not_found.ftl") {
@@ -512,6 +468,10 @@ public class BlogController {
 
     // tags the tags string and put it into an array
     private ArrayList<String> extractTags(String tags) {
+
+        // probably more efficent ways to do this.
+        //
+        // whitespace = re.compile('\s')
 
         tags = tags.replaceAll("\\s", "");
         String tagArray[] = tags.split(",");

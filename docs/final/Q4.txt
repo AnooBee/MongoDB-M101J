@@ -1,0 +1,46 @@
+
+download posts.json
+
+Drop previous posts
+
+> mongo
+> use blog
+> db.posts.drop()
+
+import posts.json
+$ mongoimport -d blog -c posts posts.json
+--imported 1000 records.
+
+>mongo
+>use blog
+> db.posts.count()
+1000
+
+Update BlogPostDAO.java
+
+ public void likePost(final String permalink, final int ordinal) {
+     
+    	//Get post
+    	Document post = this.findByPermalink(permalink);
+    	
+    	//Get comments in post
+    	ArrayList<Document> comments = (ArrayList<Document>) post.get("comments");
+    	
+    	//Get the comment that was clicked
+    	Document comment = comments.get(ordinal);
+    	int numLikes = (Integer) comment.get("num_likes");
+    	comment.put("num_likes", numLikes+1); //inc likes
+    	
+    	//Put it all back into the post
+    	//Add comment back into comments array
+    	comments.set(ordinal, comment);
+    	
+    	//Put comments array into post
+    	post.put("comments", comments);
+    	
+    	Bson filter = Filters.eq("permalink", permalink); // or this.findByPermalink(permalink)
+    	        
+    	postsCollection.replaceOne(filter, post);
+    
+    	
+    }
