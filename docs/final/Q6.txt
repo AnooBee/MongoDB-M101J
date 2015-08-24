@@ -1,0 +1,6 @@
+
+Add an index on last_name, first_name if one does not already exist.  NO -> Indexes are good for reads; not writes
+Remove all indexes from the collection, leaving only the index on _id in place. YES -> Removing indexes could speed up writes
+Provide a hint to MongoDB that it should not use an index for the inserts. NO
+Set w=0, j=0 on writes. YES -> No waiting
+Build a replica set and insert data into the secondary nodes to free up the primary nodes. NO
