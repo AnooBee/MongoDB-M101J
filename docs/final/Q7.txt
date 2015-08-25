@@ -1,0 +1,37 @@
+
+Import collections into db:
+
+c:\GitProjects\M101J\final\final7\final7>mongoimport -d photos -c albums albums.json
+2015-08-24T16:00:13.644-0400    connected to: localhost
+2015-08-24T16:00:13.844-0400    imported 1000 documents
+
+c:\GitProjects\M101J\final\final7\final7>mongoimport -d photos -c images images.json
+2015-08-24T16:00:39.647-0400    connected to: localhost
+2015-08-24T16:00:41.123-0400    imported 100000 documents
+
+
+
+
+Create Indexes:
+> db.albums.createIndex({images:1})
+{
+        "createdCollectionAutomatically" : false,
+        "numIndexesBefore" : 1,
+        "numIndexesAfter" : 2,
+        "ok" : 1
+}
+
+
+Run final.RemoveOrphanImages
+
+total deleted images..10263
+total time: 25 secs.
+Total images after removing orphans: 89737
+
+Before creating index: total time: 656 secs
+After creating index: total time: 24 secs.
+
+What are the total number of images with the tag "sunrises" after the removal of orphans?
+
+> db.images.find({"tags":"sunrises"}).count()
+44787
